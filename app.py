@@ -137,15 +137,18 @@ LEVEL_MAP = {
 
 def sse_stream(system: str, user: str, max_tokens: int = 4096) -> StreamingResponse:
     async def generate():
-        with client.messages.stream(
-            model="claude-sonnet-4-6",
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        ) as stream:
-            for text in stream.text_stream:
-                yield f"data: {json.dumps({'chunk': text}, ensure_ascii=False)}\n\n"
-        yield f"data: {json.dumps({'done': True})}\n\n"
+        try:
+            with client.messages.stream(
+                model="claude-sonnet-4-6",
+                max_tokens=max_tokens,
+                system=system,
+                messages=[{"role": "user", "content": user}],
+            ) as stream:
+                for text in stream.text_stream:
+                    yield f"data: {json.dumps({'chunk': text}, ensure_ascii=False)}\n\n"
+            yield f"data: {json.dumps({'done': True})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(
         generate(),

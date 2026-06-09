@@ -362,6 +362,7 @@ async function streamPost(url, body, onChunk) {
       if (!part.startsWith('data: ')) continue;
       try {
         const d = JSON.parse(part.slice(6));
+        if (d.error) throw new Error(d.error);
         if (d.chunk) { full += d.chunk; if (onChunk) onChunk(d.chunk, full); }
       } catch {}
     }
