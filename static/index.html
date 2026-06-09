@@ -395,6 +395,7 @@ async function generateIdeas() {
 
   try {
     const text = await streamPost('/api/generate-ideas', {industry, department, challenges, level});
+    if (!text || !text.trim()) throw new Error('レスポンスが空です。APIキーを確認してください。');
     const ideas = JSON.parse(extractJson(text));
     renderIdeas(ideas);
   } catch (e) {
