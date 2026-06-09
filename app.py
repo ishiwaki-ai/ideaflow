@@ -160,6 +160,13 @@ def sse_stream(system: str, user: str, max_tokens: int = 4096) -> StreamingRespo
 
 PROJECTS_FILE = Path(__file__).parent / "projects.json"
 
+@app.get("/api/health")
+async def health():
+    import os
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    return {"key_set": bool(key), "key_prefix": key[:10] if key else "none"}
+
+
 @app.get("/api/projects")
 async def get_projects():
     return JSONResponse(content=[])
