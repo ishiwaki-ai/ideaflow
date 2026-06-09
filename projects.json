@@ -1,0 +1,72 @@
+[
+  {
+    "name": "IdeaFlow",
+    "description": "AI化のアイデア出しから自動化フロー設計まで一気通貫で行えるローカルWebアプリ",
+    "location": "~/my-project/ai-automation/",
+    "status": "稼働中",
+    "start": "cd ~/my-project/ai-automation && ./start.sh",
+    "url": "http://localhost:8100",
+    "tech": ["FastAPI", "Claude API", "Vanilla JS"],
+    "note": "このアプリ自体"
+  },
+  {
+    "name": "LawMonitor",
+    "description": "法令・条例の改正を自動収集・AI分析してメール通知する早期察知システム",
+    "location": "~/law-monitor/",
+    "status": "稼働中",
+    "start": "cd ~/law-monitor && ./start.sh",
+    "url": null,
+    "tech": ["Python", "Claude API"],
+    "note": ""
+  },
+  {
+    "name": "価格リサーチ自動化",
+    "description": "商品名を入力するとWeb検索・スクレイピングを行い、Google Sheetsへ出力・都道府県別単価を可視化",
+    "location": "~/my-project/Demo260517/",
+    "status": "開発中",
+    "start": "cd ~/my-project/Demo260517 && uv run main.py",
+    "url": null,
+    "tech": ["Python", "BeautifulSoup4", "Google Sheets API"],
+    "note": ""
+  },
+  {
+    "name": "mbox 全文検索",
+    "description": "mboxファイルをインデックス化してブラウザUIで全文検索できるツール",
+    "location": "~/my-project/mbox_search.py",
+    "status": "スクリプト",
+    "start": "cd ~/my-project && uv run mbox_search.py",
+    "url": null,
+    "tech": ["Python"],
+    "note": ""
+  },
+  {
+    "name": "mbox → PDF 変換",
+    "description": "mboxファイルをPDFに一括変換するスクリプト",
+    "location": "~/my-project/mbox_to_pdf.py",
+    "status": "スクリプト",
+    "start": "cd ~/my-project && uv run mbox_to_pdf.py",
+    "url": null,
+    "tech": ["Python"],
+    "note": ""
+  },
+  {
+    "name": "PDF リネーム",
+    "description": "Dropbox/temporary のPDFをAIが内容を読んで自動リネームするClaude Codeスキル",
+    "location": "Claude Code スキル（pdfrename）",
+    "status": "スキル",
+    "start": "/pdfrename",
+    "url": null,
+    "tech": ["Claude Code"],
+    "note": "Claude Codeのチャット上で /pdfrename と入力して実行"
+  },
+  {
+    "name": "Quality of Coffee リニューアル",
+    "description": "石光商事グループのコーヒーサイトリニューアル。デザイン・ファイル構成・戦略を管理",
+    "location": "~/my-project/（index.html 他）",
+    "status": "進行中",
+    "start": "ブラウザで ~/my-project/index.html を開く",
+    "url": null,
+    "tech": ["HTML", "CSS", "JavaScript"],
+    "note": ""
+  }
+]

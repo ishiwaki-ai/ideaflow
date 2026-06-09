@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IdeaFlow</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #222; line-height: 1.5; }
+
+/* ── Header ── */
+.header { background: #16213e; color: #fff; padding: 1rem 1.5rem 0; }
+.header h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.2rem; }
+.header p { font-size: 0.82rem; opacity: 0.65; margin-bottom: 0.8rem; }
+.tabs { display: flex; gap: 0.4rem; }
+.tab-btn {
+  padding: 0.55rem 1.3rem; border: none; border-radius: 6px 6px 0 0;
+  cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.15s;
+  background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.65);
+}
+.tab-btn.active { background: #f0f2f5; color: #16213e; }
+.tab-btn:not(.active):hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+/* ── Tab pane ── */
+.pane { display: none; padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+.pane.active { display: block; }
+
+/* ── Warning ── */
+.warning {
+  background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px;
+  padding: 0.55rem 0.9rem; font-size: 0.8rem; color: #92400e; margin-bottom: 1.2rem;
+}
+
+/* ── Form ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.fg { display: flex; flex-direction: column; gap: 0.35rem; }
+.fg.full { grid-column: 1 / -1; }
+.fg label { font-size: 0.8rem; font-weight: 700; color: #555; text-transform: uppercase; letter-spacing: 0.03em; }
+.fg input, .fg textarea, .fg select {
+  padding: 0.6rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px;
+  font-size: 0.9rem; font-family: inherit; background: #fff; transition: border 0.15s;
+}
+.fg input:focus, .fg textarea:focus, .fg select:focus { outline: none; border-color: #3b82f6; }
+.fg textarea { resize: vertical; min-height: 80px; }
+
+/* ── Buttons ── */
+.btn {
+  padding: 0.6rem 1.3rem; border: none; border-radius: 6px;
+  cursor: pointer; font-size: 0.88rem; font-weight: 600; transition: all 0.15s;
+}
+.btn-primary { background: #e11d48; color: #fff; }
+.btn-primary:hover:not(:disabled) { background: #be123c; }
+.btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+.btn-ghost { background: #fff; color: #374151; border: 1px solid #d1d5db; }
+.btn-ghost:hover { background: #f9fafb; }
+.btn-sm { padding: 0.4rem 0.9rem; font-size: 0.8rem; }
+
+/* ── Section title ── */
+.section-title { font-size: 0.82rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.6rem; }
+
+/* ── Ideas grid ── */
+.ideas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.idea-card {
+  background: #fff; border-radius: 10px; padding: 1.1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;
+}
+.idea-card h3 { font-size: 0.97rem; font-weight: 700; margin-bottom: 0.45rem; color: #111; }
+.idea-desc { font-size: 0.83rem; color: #4b5563; line-height: 1.55; margin-bottom: 0.7rem; }
+.idea-benefits {
+  font-size: 0.79rem; background: #f0fdf4; color: #166534;
+  padding: 0.35rem 0.6rem; border-radius: 4px; margin-bottom: 0.7rem;
+}
+.chip-row { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.7rem; }
+.chip { padding: 0.18rem 0.5rem; border-radius: 3px; font-size: 0.72rem; font-weight: 600; }
+.chip-tool  { background: #eff6ff; color: #1d4ed8; }
+.chip-easy  { background: #dcfce7; color: #166534; }
+.chip-medium { background: #fef9c3; color: #854d0e; }
+.chip-hard  { background: #fee2e2; color: #991b1b; }
+.chip-low   { background: #f3f4f6; color: #4b5563; }
+.chip-medium-impact { background: #dbeafe; color: #1e40af; }
+.chip-high  { background: #dcfce7; color: #166534; }
+.card-divider { border: none; border-top: 1px solid #f3f4f6; margin: 0.7rem 0; }
+
+/* ── Flow input ── */
+.flow-row { display: flex; gap: 0.7rem; align-items: center; margin-bottom: 0.9rem; }
+.flow-row input { flex: 1; padding: 0.65rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.92rem; font-family: inherit; }
+.flow-row input:focus { outline: none; border-color: #3b82f6; }
+.samples { margin-bottom: 1.4rem; }
+.sample-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+.sample-chip {
+  padding: 0.3rem 0.8rem; border: 1px solid #d1d5db; border-radius: 20px;
+  font-size: 0.78rem; cursor: pointer; background: #fff; transition: all 0.15s; color: #374151;
+}
+.sample-chip:hover { background: #e11d48; color: #fff; border-color: #e11d48; }
+
+/* ── Flow steps ── */
+.flow-summary {
+  background: #fff; border-radius: 8px; padding: 0.9rem 1.1rem;
+  border-left: 4px solid #e11d48; margin-bottom: 1.1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.flow-summary h3 { font-size: 0.97rem; font-weight: 700; margin-bottom: 0.2rem; }
+.flow-summary p { font-size: 0.83rem; color: #4b5563; }
+.flow-scroll { overflow-x: auto; padding-bottom: 0.5rem; }
+.flow-steps { display: flex; align-items: flex-start; gap: 0; padding: 0.5rem 0 1rem; }
+.step-card {
+  width: 190px; flex-shrink: 0; background: #fff; border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; overflow: hidden;
+}
+.step-type {
+  padding: 0.35rem 0.7rem; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; color: #fff;
+}
+.type-trigger   { background: #3b82f6; }
+.type-ai        { background: #8b5cf6; }
+.type-action    { background: #10b981; }
+.type-condition { background: #f59e0b; }
+.type-output    { background: #06b6d4; }
+.step-body { padding: 0.7rem 0.8rem; }
+.step-num { font-size: 0.68rem; color: #9ca3af; margin-bottom: 0.15rem; }
+.step-title { font-size: 0.87rem; font-weight: 700; margin-bottom: 0.3rem; }
+.step-desc { font-size: 0.76rem; color: #4b5563; line-height: 1.45; margin-bottom: 0.4rem; }
+.step-tools { display: flex; flex-wrap: wrap; gap: 0.2rem; }
+.step-tool { background: #f3f4f6; color: #374151; padding: 0.12rem 0.4rem; border-radius: 3px; font-size: 0.68rem; }
+.step-output { font-size: 0.68rem; color: #9ca3af; margin-top: 0.35rem; }
+.arrow { display: flex; align-items: center; padding: 0 0.25rem; color: #d1d5db; font-size: 1.4rem; flex-shrink: 0; margin-top: 38px; }
+
+/* ── Chat ── */
+.chat-box { background: #fff; border-radius: 8px; padding: 1rem 1.1rem; margin-top: 1.3rem; border: 1px solid #e5e7eb; }
+.chat-msgs { min-height: 50px; max-height: 260px; overflow-y: auto; margin-bottom: 0.8rem; }
+.msg { padding: 0.45rem 0.75rem; border-radius: 6px; margin-bottom: 0.45rem; font-size: 0.83rem; }
+.msg-user { background: #f3f4f6; color: #111; }
+.msg-ai { background: #eff6ff; color: #1e3a5f; border-left: 3px solid #3b82f6; }
+.chat-row { display: flex; gap: 0.5rem; }
+.chat-row input { flex: 1; padding: 0.55rem 0.8rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; font-family: inherit; }
+.chat-row input:focus { outline: none; border-color: #3b82f6; }
+
+/* ── Export ── */
+.export-box { background: #fff; border-radius: 8px; padding: 1rem 1.1rem; margin-top: 1rem; border: 1px solid #e5e7eb; }
+.export-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; }
+.export-header span { font-size: 0.88rem; font-weight: 700; }
+.export-header .btn-row { display: flex; gap: 0.4rem; }
+pre.export-pre {
+  background: #0f172a; color: #e2e8f0; padding: 1rem; border-radius: 6px;
+  font-family: 'SF Mono', Menlo, monospace; font-size: 0.78rem; white-space: pre-wrap;
+  max-height: 420px; overflow-y: auto; display: none; margin-top: 0.6rem;
+}
+
+/* ── Projects ── */
+.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+.proj-card {
+  background: #fff; border-radius: 10px; padding: 1.1rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid #e5e7eb;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.proj-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.proj-name { font-size: 1rem; font-weight: 700; color: #111; }
+.status-badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.status-稼働中 { background: #dcfce7; color: #166534; }
+.status-開発中 { background: #fef9c3; color: #854d0e; }
+.status-進行中 { background: #dbeafe; color: #1e40af; }
+.status-スクリプト { background: #f3f4f6; color: #374151; }
+.status-スキル { background: #ede9fe; color: #5b21b6; }
+.proj-desc { font-size: 0.83rem; color: #4b5563; line-height: 1.5; }
+.proj-location { font-size: 0.75rem; color: #9ca3af; font-family: 'SF Mono', Menlo, monospace; background: #f9fafb; padding: 0.3rem 0.5rem; border-radius: 4px; }
+.proj-start { font-size: 0.75rem; color: #374151; font-family: 'SF Mono', Menlo, monospace; background: #0f172a; color: #7dd3fc; padding: 0.35rem 0.6rem; border-radius: 4px; }
+.proj-note { font-size: 0.75rem; color: #6b7280; font-style: italic; }
+.proj-tech { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.tech-tag { background: #eff6ff; color: #1d4ed8; padding: 0.15rem 0.45rem; border-radius: 3px; font-size: 0.7rem; }
+.proj-url-btn {
+  display: inline-block; margin-top: auto; padding: 0.4rem 0.9rem; background: #e11d48;
+  color: #fff; border-radius: 6px; font-size: 0.8rem; font-weight: 600; text-decoration: none;
+  text-align: center; cursor: pointer; border: none; transition: background 0.15s;
+}
+.proj-url-btn:hover { background: #be123c; }
+
+/* ── Loading ── */
+.loading { display: none; align-items: center; gap: 0.5rem; color: #6b7280; font-size: 0.83rem; padding: 0.8rem 0; }
+.loading.show { display: flex; }
+.spinner {
+  width: 15px; height: 15px; border: 2px solid #e5e7eb;
+  border-top-color: #e11d48; border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.form-footer { display: flex; justify-content: flex-end; margin-top: 1rem; }
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .fg.full { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div style="max-width:1100px;margin:0 auto;">
+    <h1>IdeaFlow</h1>
+    <p>AI化のアイデア出しから、自動化フローの設計まで一気通貫</p>
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-btn-ideas" onclick="switchTab('ideas')">アイデア生成</button>
+      <button class="tab-btn" id="tab-btn-flow" onclick="switchTab('flow')">フロー設計</button>
+      <button class="tab-btn" id="tab-btn-projects" onclick="switchTab('projects')">プロジェクト一覧</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────────────────────── PANE: Ideas ──────────────────────────── -->
+<div class="pane active" id="pane-ideas">
+  <div class="warning">⚠️ 機密情報・個人情報は入力しないでください</div>
+
+  <div class="form-grid">
+    <div class="fg">
+      <label>業種・業界</label>
+      <input type="text" id="industry" placeholder="例: 製造業、小売業、IT企業" list="dl-industry">
+      <datalist id="dl-industry">
+        <option value="製造業"><option value="小売業"><option value="IT・テクノロジー">
+        <option value="金融・保険"><option value="医療・ヘルスケア"><option value="飲食・食品">
+        <option value="不動産"><option value="教育"><option value="物流・運輸"><option value="人材・HR">
+      </datalist>
+    </div>
+    <div class="fg">
+      <label>部署・役割</label>
+      <input type="text" id="department" placeholder="例: 営業、マーケティング、総務" list="dl-dept">
+      <datalist id="dl-dept">
+        <option value="営業"><option value="マーケティング"><option value="総務・人事">
+        <option value="経理・財務"><option value="カスタマーサポート"><option value="製造・生産管理">
+        <option value="企画・戦略"><option value="IT・システム"><option value="経営者">
+      </datalist>
+    </div>
+    <div class="fg full">
+      <label>現状の課題・やりたいこと</label>
+      <textarea id="challenges" placeholder="例: 毎日の日報作成に時間がかかる。顧客問い合わせ対応が多い。月次データ集計が手作業で大変..."></textarea>
+    </div>
+    <div class="fg">
+      <label>AIレベル感</label>
+      <select id="level">
+        <option value="nocode">ノーコード・ローコード（プログラミング不要）</option>
+        <option value="intermediate" selected>中級（APIを使った自動化）</option>
+        <option value="advanced">高度（カスタム開発）</option>
+      </select>
+    </div>
+    <div class="fg" style="justify-content:flex-end;">
+      <button class="btn btn-primary" id="ideas-btn" onclick="generateIdeas()">アイデアを生成</button>
+    </div>
+  </div>
+
+  <div class="loading" id="ideas-loading">
+    <div class="spinner"></div><span>AIがアイデアを生成中...</span>
+  </div>
+
+  <div class="ideas-grid" id="ideas-grid"></div>
+</div>
+
+<!-- ──────────────────────────── PANE: Projects ─────────────────────────── -->
+<div class="pane" id="pane-projects">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+    <div>
+      <div class="section-title">プロジェクト一覧</div>
+      <p style="font-size:0.82rem;color:#6b7280;margin-top:0.2rem;">追加・更新は <code style="background:#f3f4f6;padding:0.1rem 0.4rem;border-radius:3px;">ai-automation/projects.json</code> を編集してください</p>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="loadProjects()">更新</button>
+  </div>
+  <div class="loading" id="proj-loading">
+    <div class="spinner"></div><span>読み込み中...</span>
+  </div>
+  <div class="proj-grid" id="proj-grid"></div>
+</div>
+
+<!-- ─────────────────────────────── PANE: Flow ───────────────────────────── -->
+<div class="pane" id="pane-flow">
+  <div class="warning">⚠️ 機密情報・個人情報は入力しないでください</div>
+
+  <div class="flow-row">
+    <input type="text" id="flow-desc" placeholder="自動化したい業務を一言で入力してください" onkeydown="if(event.key==='Enter')generateFlow()">
+    <button class="btn btn-primary" id="flow-btn" onclick="generateFlow()">フローを生成</button>
+  </div>
+
+  <div class="samples">
+    <div class="section-title">サンプル</div>
+    <div class="sample-chips">
+      <span class="sample-chip" onclick="useSample('業界ニュースを検索して要約しGmailでメール下書きを作成する')">業界ニュースのメール下書き</span>
+      <span class="sample-chip" onclick="useSample('会議の音声録音を文字起こしして議事録を作成しSlackに共有する')">会議議事録の自動作成</span>
+      <span class="sample-chip" onclick="useSample('顧客からの問い合わせメールを分類・優先度付けして担当者に自動振り分けする')">問い合わせ自動振り分け</span>
+      <span class="sample-chip" onclick="useSample('月次の売上データをスプレッドシートから集計してPDFレポートを生成しメールで送る')">月次レポートの自動生成</span>
+    </div>
+  </div>
+
+  <div class="loading" id="flow-loading">
+    <div class="spinner"></div><span>AIがフローを設計中...</span>
+  </div>
+
+  <div id="flow-display" style="display:none;">
+    <div class="flow-summary" id="flow-summary"></div>
+    <div class="flow-scroll">
+      <div class="flow-steps" id="flow-steps"></div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-box">
+      <div class="section-title" style="margin-bottom:0.6rem;">チャットで修正</div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="chat-row">
+        <input type="text" id="chat-input" placeholder="修正を指示してください（例：ステップ3にエラーハンドリングを追加して）" onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="btn btn-primary btn-sm" onclick="sendChat()">送信</button>
+      </div>
+      <div class="loading" id="chat-loading">
+        <div class="spinner"></div><span>フローを更新中...</span>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="export-box">
+      <div class="export-header">
+        <span>Claude Codeへの実装指示</span>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" onclick="generateExport()">指示書を生成</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyExport()">コピー</button>
+        </div>
+      </div>
+      <div class="loading" id="export-loading">
+        <div class="spinner"></div><span>指示書を生成中...</span>
+      </div>
+      <pre class="export-pre" id="export-pre"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let currentFlow = null;
+
+// ── Tab ───────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['ideas', 'flow', 'projects'].forEach(t => {
+    document.getElementById(`pane-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === tab);
+  });
+  if (tab === 'projects') loadProjects();
+}
+
+// ── Streaming helper ──────────────────────────────────────────────────────
+async function streamPost(url, body, onChunk) {
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '', full = '';
+
+  while (true) {
+    const {done, value} = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, {stream: true});
+    const parts = buf.split('\n\n');
+    buf = parts.pop();
+    for (const part of parts) {
+      if (!part.startsWith('data: ')) continue;
+      try {
+        const d = JSON.parse(part.slice(6));
+        if (d.chunk) { full += d.chunk; if (onChunk) onChunk(d.chunk, full); }
+      } catch {}
+    }
+  }
+  return full;
+}
+
+// ── JSON extraction ───────────────────────────────────────────────────────
+function extractJson(text) {
+  text = text.trim();
+  const m = text.match(/```(?:json)?\n?([\s\S]*?)\n?```/);
+  if (m) text = m[1].trim();
+  return text;
+}
+
+// ── Idea Generator ────────────────────────────────────────────────────────
+async function generateIdeas() {
+  const industry   = document.getElementById('industry').value.trim();
+  const department = document.getElementById('department').value.trim();
+  const challenges = document.getElementById('challenges').value.trim();
+  const level      = document.getElementById('level').value;
+  if (!industry || !department || !challenges) {
+    alert('業種、部署、課題をすべて入力してください。'); return;
+  }
+
+  const grid = document.getElementById('ideas-grid');
+  const loading = document.getElementById('ideas-loading');
+  grid.innerHTML = '';
+  loading.classList.add('show');
+  document.getElementById('ideas-btn').disabled = true;
+
+  try {
+    const text = await streamPost('/api/generate-ideas', {industry, department, challenges, level});
+    const ideas = JSON.parse(extractJson(text));
+    renderIdeas(ideas);
+  } catch (e) {
+    grid.innerHTML = `<p style="color:#dc2626;font-size:.85rem;">エラー: ${e.message}</p>`;
+  } finally {
+    loading.classList.remove('show');
+    document.getElementById('ideas-btn').disabled = false;
+  }
+}
+
+const DIFF_LABEL  = {easy:'簡単', medium:'中級', hard:'高度'};
+const IMPACT_LABEL = {low:'低', medium:'中', high:'高'};
+const IMPACT_CLASS = {low:'chip-low', medium:'chip-medium-impact', high:'chip-high'};
+
+function renderIdeas(ideas) {
+  const grid = document.getElementById('ideas-grid');
+  grid.innerHTML = ideas.map(idea => `
+    <div class="idea-card">
+      <h3>${esc(idea.title)}</h3>
+      <p class="idea-desc">${esc(idea.description)}</p>
+      <div class="idea-benefits">&#10003; ${esc(idea.benefits)}</div>
+      <div class="chip-row">
+        ${(idea.tools||[]).map(t=>`<span class="chip chip-tool">${esc(t)}</span>`).join('')}
+      </div>
+      <div class="chip-row">
+        <span class="chip chip-${idea.difficulty}">難易度: ${DIFF_LABEL[idea.difficulty]||idea.difficulty}</span>
+        <span class="chip ${IMPACT_CLASS[idea.impact]||'chip-low'}">効果: ${IMPACT_LABEL[idea.impact]||idea.impact}</span>
+      </div>
+      <hr class="card-divider">
+      <button class="btn btn-primary btn-sm" style="width:100%"
+        onclick="sendToFlow(${JSON.stringify(idea.flow_hint||idea.title)})">
+        &#8594; フロー設計へ
+      </button>
+    </div>
+  `).join('');
+}
+
+function sendToFlow(hint) {
+  document.getElementById('flow-desc').value = hint;
+  switchTab('flow');
+  generateFlow();
+}
+
+// ── Flow Designer ─────────────────────────────────────────────────────────
+function useSample(text) {
+  document.getElementById('flow-desc').value = text;
+  generateFlow();
+}
+
+async function generateFlow() {
+  const description = document.getElementById('flow-desc').value.trim();
+  if (!description) { alert('業務の説明を入力してください。'); return; }
+
+  const loading = document.getElementById('flow-loading');
+  const display = document.getElementById('flow-display');
+  loading.classList.add('show');
+  display.style.display = 'none';
+  document.getElementById('flow-btn').disabled = true;
+  document.getElementById('chat-msgs').innerHTML = '';
+  document.getElementById('export-pre').textContent = '';
+  document.getElementById('export-pre').style.display = 'none';
+
+  try {
+    const text = await streamPost('/api/generate-flow', {description});
+    currentFlow = JSON.parse(extractJson(text));
+    renderFlow(currentFlow);
+    display.style.display = 'block';
+  } catch (e) {
+    alert(`フロー生成エラー: ${e.message}`);
+  } finally {
+    loading.classList.remove('show');
+    document.getElementById('flow-btn').disabled = false;
+  }
+}
+
+const TYPE_LABEL = {trigger:'トリガー', ai:'AI処理', action:'アクション', condition:'条件分岐', output:'出力'};
+
+function renderFlow(flow) {
+  document.getElementById('flow-summary').innerHTML =
+    `<h3>${esc(flow.title)}</h3><p>${esc(flow.summary)}</p>`;
+
+  const stepsEl = document.getElementById('flow-steps');
+  stepsEl.innerHTML = (flow.steps||[]).map((step, i) => `
+    ${i > 0 ? '<div class="arrow">&#8594;</div>' : ''}
+    <div class="step-card">
+      <div class="step-type type-${step.type||'action'}">${TYPE_LABEL[step.type]||step.type}</div>
+      <div class="step-body">
+        <div class="step-num">STEP ${step.id}</div>
+        <div class="step-title">${esc(step.title)}</div>
+        <div class="step-desc">${esc(step.description)}</div>
+        <div class="step-tools">${(step.tools||[]).map(t=>`<span class="step-tool">${esc(t)}</span>`).join('')}</div>
+        ${step.output ? `<div class="step-output">出力: ${esc(step.output)}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────
+async function sendChat() {
+  if (!currentFlow) return;
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message) return;
+
+  const msgsEl = document.getElementById('chat-msgs');
+  msgsEl.innerHTML += `<div class="msg msg-user">${esc(message)}</div>`;
+  input.value = '';
+
+  const loading = document.getElementById('chat-loading');
+  loading.classList.add('show');
+
+  try {
+    const text = await streamPost('/api/chat-flow', {current_flow: currentFlow, message});
+    currentFlow = JSON.parse(extractJson(text));
+    renderFlow(currentFlow);
+    msgsEl.innerHTML += `<div class="msg msg-ai">フローを更新しました。</div>`;
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  } catch (e) {
+    msgsEl.innerHTML += `<div class="msg msg-ai" style="color:#dc2626;">エラー: ${esc(e.message)}</div>`;
+  } finally {
+    loading.classList.remove('show');
+  }
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+async function generateExport() {
+  if (!currentFlow) { alert('先にフローを生成してください。'); return; }
+
+  const loading = document.getElementById('export-loading');
+  const pre = document.getElementById('export-pre');
+  pre.textContent = '';
+  pre.style.display = 'block';
+  loading.classList.add('show');
+
+  try {
+    await streamPost('/api/export-instructions', {flow: currentFlow}, (_, full) => {
+      pre.textContent = full;
+    });
+  } catch (e) {
+    pre.textContent = `エラー: ${e.message}`;
+  } finally {
+    loading.classList.remove('show');
+  }
+}
+
+function copyExport() {
+  const text = document.getElementById('export-pre').textContent;
+  if (!text) { alert('先に指示書を生成してください。'); return; }
+  navigator.clipboard.writeText(text).then(() => alert('コピーしました！'));
+}
+
+// ── Projects ──────────────────────────────────────────────────────────────
+let projectsLoaded = false;
+
+async function loadProjects() {
+  if (projectsLoaded) return;
+  const loading = document.getElementById('proj-loading');
+  const grid = document.getElementById('proj-grid');
+  loading.classList.add('show');
+  try {
+    const resp = await fetch('/api/projects');
+    const projects = await resp.json();
+    renderProjects(projects);
+    projectsLoaded = true;
+  } catch (e) {
+    grid.innerHTML = `<p style="color:#dc2626;font-size:.85rem;">読み込みエラー: ${e.message}</p>`;
+  } finally {
+    loading.classList.remove('show');
+  }
+}
+
+// 「更新」ボタン用にリセット付きで再読み込み
+window.loadProjects = async function() {
+  projectsLoaded = false;
+  const loading = document.getElementById('proj-loading');
+  const grid = document.getElementById('proj-grid');
+  grid.innerHTML = '';
+  loading.classList.add('show');
+  try {
+    const resp = await fetch('/api/projects');
+    const projects = await resp.json();
+    renderProjects(projects);
+    projectsLoaded = true;
+  } catch (e) {
+    grid.innerHTML = `<p style="color:#dc2626;font-size:.85rem;">読み込みエラー: ${e.message}</p>`;
+  } finally {
+    loading.classList.remove('show');
+  }
+};
+
+function renderProjects(projects) {
+  const grid = document.getElementById('proj-grid');
+  grid.innerHTML = projects.map(p => `
+    <div class="proj-card">
+      <div class="proj-header">
+        <span class="proj-name">${esc(p.name)}</span>
+        <span class="status-badge status-${esc(p.status)}">${esc(p.status)}</span>
+      </div>
+      <p class="proj-desc">${esc(p.description)}</p>
+      <div class="proj-location">${esc(p.location)}</div>
+      ${p.tech && p.tech.length ? `<div class="proj-tech">${p.tech.map(t=>`<span class="tech-tag">${esc(t)}</span>`).join('')}</div>` : ''}
+      <div class="proj-start">${esc(p.start)}</div>
+      ${p.note ? `<p class="proj-note">${esc(p.note)}</p>` : ''}
+      ${p.url ? `<a class="proj-url-btn" href="${esc(p.url)}" target="_blank">開く →</a>` : ''}
+    </div>
+  `).join('');
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
