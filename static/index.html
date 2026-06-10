@@ -427,7 +427,8 @@ function renderIdeas(ideas) {
       </div>
       <hr class="card-divider">
       <button class="btn btn-primary btn-sm" style="width:100%"
-        onclick="sendToFlow(${JSON.stringify(idea.flow_hint||idea.title)})">
+        data-hint="${(idea.flow_hint||idea.title).replace(/"/g,'&quot;')}"
+        onclick="sendToFlow(this.dataset.hint)">
         &#8594; フロー設計へ
       </button>
     </div>
