@@ -412,8 +412,9 @@ const IMPACT_LABEL = {low:'低', medium:'中', high:'高'};
 const IMPACT_CLASS = {low:'chip-low', medium:'chip-medium-impact', high:'chip-high'};
 
 function renderIdeas(ideas) {
+  window._ideaHints = ideas.map(idea => idea.flow_hint || idea.title);
   const grid = document.getElementById('ideas-grid');
-  grid.innerHTML = ideas.map(idea => `
+  grid.innerHTML = ideas.map((idea, i) => `
     <div class="idea-card">
       <h3>${esc(idea.title)}</h3>
       <p class="idea-desc">${esc(idea.description)}</p>
@@ -427,8 +428,7 @@ function renderIdeas(ideas) {
       </div>
       <hr class="card-divider">
       <button class="btn btn-primary btn-sm" style="width:100%"
-        data-hint="${(idea.flow_hint||idea.title).replace(/"/g,'&quot;')}"
-        onclick="sendToFlow(this.dataset.hint)">
+        onclick="sendToFlow(window._ideaHints[${i}])">
         &#8594; フロー設計へ
       </button>
     </div>
