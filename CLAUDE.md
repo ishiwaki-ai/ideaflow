@@ -9,7 +9,7 @@ AI化のアイデア出しから自動化フロー設計まで一気通貫でで
 
 ## 起動方法
 ```bash
-cd /Users/tomohiro/my-project/ai-automation
+cd /Users/tomohiro/my-project/ideaflow
 ./start.sh
 ```
 → ブラウザが自動で http://localhost:8100 を開く
