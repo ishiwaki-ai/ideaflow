@@ -139,7 +139,7 @@ def sse_stream(system: str, user: str, max_tokens: int = 4096) -> StreamingRespo
     async def generate():
         try:
             with client.messages.stream(
-                model="claude-sonnet-4-6",
+                model="claude-sonnet-5-5",
                 max_tokens=max_tokens,
                 system=system,
                 messages=[{"role": "user", "content": user}],
