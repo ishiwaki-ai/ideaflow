@@ -12,9 +12,9 @@
   {
     "name": "LawMonitor",
     "description": "法令・条例の改正を自動収集・AI分析してメール通知する早期察知システム",
-    "location": "~/law-monitor/",
+    "location": "~/my-project/law-monitor/",
     "status": "稼働中",
-    "start": "cd ~/law-monitor && ./start.sh",
+    "start": "cd ~/my-project/law-monitor && ./start.sh",
     "url": null,
     "tech": ["Python", "Claude API"],
     "note": ""
